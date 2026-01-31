@@ -153,161 +153,324 @@ This design establishes patterns for:
 - Component structure following Next.js App Router conventions
 - Animation variants centralized in `/lib/animations.ts`
 
-## Implementation Phases
+## Tasks
 
-<!-- START_PHASE_1 -->
-### Phase 1: Project Scaffolding
+Each task represents a cohesive unit of work for an autonomous agent. Tasks must be completed in order due to dependencies.
 
-**Goal:** Initialize Next.js project with core dependencies and configuration
+---
 
-**Components:**
-- Next.js 16 project via `create-next-app` with App Router
-- Tailwind CSS v4 configuration
-- TypeScript strict mode
-- Framer Motion installation
-- Google Fonts (Lora + Inter) setup in layout
-- Basic folder structure (`/app`, `/components`, `/content`, `/lib`, `/public`)
+### Task 1: Project Scaffolding
 
-**Dependencies:** None (first phase)
+**Description:** Initialize the Next.js 16 project with all foundational dependencies, configuration, and folder structure. This establishes the development environment for all subsequent tasks.
 
-**Done when:** `npm run dev` starts successfully, fonts render, Tailwind classes work
-<!-- END_PHASE_1 -->
+**Blocked by:** None
 
-<!-- START_PHASE_2 -->
-### Phase 2: Layout & Navigation
+**Implementation guidance:**
+1. Run `pnpm create next-app@latest . --typescript --tailwind --eslint --app --turbopack --yes` to scaffold Next.js 16 project
+2. Install framer-motion with `pnpm add framer-motion`
+3. Update `app/layout.tsx` to configure Google Fonts (Lora + Inter) with pt-BR metadata, including OpenGraph settings
+4. Replace `app/globals.css` with Tailwind v4 theme variables (--color-primary: #1a3a2f, --color-secondary: #a85a3a, --color-background: #f8f5f0, --color-text: #1c1c1c, --color-muted: #e8dfd0) and font-family settings
+5. Update `app/page.tsx` with test content showing the color palette
+6. Create folder structure with `.gitkeep` files:
+   - `components/layout`, `components/ui`, `components/sections`, `components/timeline`, `components/map`, `components/personagens`, `components/content`
+   - `content/timeline`, `content/personagens`, `content/sections`
+   - `lib`, `types`
 
-**Goal:** Sticky header with navigation and scroll progress indicator
+**Validation criteria:**
+- [ ] `pnpm run dev` starts without errors
+- [ ] `pnpm run build` completes successfully
+- [ ] `pnpm list framer-motion` shows framer-motion installed
+- [ ] Browser shows test page with Lora (serif) and Inter (sans-serif) fonts rendering correctly
+- [ ] Color palette variables are visible in test content (green, terracotta, off-white, near-black, tan)
+- [ ] All folder structure directories exist
+- [ ] `<html lang="pt-BR">` is set in layout
 
-**Components:**
-- `app/layout.tsx` — root layout with fonts, metadata
-- `app/page.tsx` — main page shell with section anchors
-- `components/layout/Header.tsx` — sticky header with nav links
-- `components/layout/ScrollProgress.tsx` — progress bar tied to scroll position
-- `components/layout/Footer.tsx` — simple footer
+---
 
-**Dependencies:** Phase 1
+### Task 2: Layout & Navigation
 
-**Done when:** Header sticks on scroll, nav links scroll to anchors, progress bar updates smoothly
-<!-- END_PHASE_2 -->
+**Description:** Build the persistent layout components: sticky header with navigation, scroll progress indicator, and footer. Establish the single-page structure with hash-anchor sections.
 
-<!-- START_PHASE_3 -->
-### Phase 3: Section Components & Animation System
+**Blocked by:** Task 1
 
-**Goal:** Reusable section containers with scroll-triggered animations
+**Implementation guidance:**
+1. Create `components/layout/Header.tsx` with sticky header, logo "Cabanagem", nav links (Contexto, A Revolta, Personagens, Mapa, Legado, Fontes), and smooth scroll behavior using `scrollIntoView`
+2. Create `components/layout/ScrollProgress.tsx` using Framer Motion `useScroll` and `useSpring` to show progress bar at top-16 (below header)
+3. Create `components/layout/Footer.tsx` with project branding and copyright
+4. Create `components/layout/index.ts` barrel export for Header, ScrollProgress, Footer
+5. Update `app/layout.tsx` to import and render Header, ScrollProgress, and Footer with main wrapped in pt-16 padding
+6. Update `app/page.tsx` with placeholder sections (hero, contexto, revolta, personagens, mapa, legado, fontes) with alternating backgrounds and proper id attributes for navigation
 
-**Components:**
-- `components/ui/Section.tsx` — wrapper with id anchors, padding, background variants
-- `components/ui/AnimatedReveal.tsx` — Framer Motion wrapper for fade-up on scroll
-- `components/ui/ParallaxBackground.tsx` — parallax effect container
-- `lib/animations.ts` — centralized animation variants
-- `components/sections/Hero.tsx` — full-viewport hero with title and scroll prompt
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] Header is sticky and remains visible while scrolling
+- [ ] Clicking nav links scrolls smoothly to corresponding section
+- [ ] URL updates with hash anchors (e.g., `/#contexto`) when navigating
+- [ ] Scroll progress bar animates from 0% to 100% as user scrolls page
+- [ ] Footer appears at bottom of page
+- [ ] All sections have visible alternating backgrounds for distinction
 
-**Dependencies:** Phase 2
+---
 
-**Done when:** Hero renders with staggered animation, sections reveal on scroll, parallax works
-<!-- END_PHASE_3 -->
+### Task 3: Section Components & Animation System
 
-<!-- START_PHASE_4 -->
-### Phase 4: MDX Content System
+**Description:** Create the reusable animation system and section wrapper components. Build the Hero section with scroll-triggered animations. Establish patterns for `prefers-reduced-motion` compliance.
 
-**Goal:** MDX pipeline for narrative content with citation support
+**Blocked by:** Task 2
 
-**Components:**
-- `@next/mdx` configuration in `next.config.js`
-- `content/sections/contexto.mdx` — sample section content
-- `components/content/Citation.tsx` — inline citation with tooltip
-- `components/content/SourceTooltip.tsx` — hover preview of source
-- `lib/sources.ts` — utility to aggregate sources from MDX frontmatter
-- MDX component mapping in `mdx-components.tsx`
+**Implementation guidance:**
+1. Create `lib/animations.ts` with Framer Motion variants: fadeUpVariants, staggerContainerVariants, scaleInVariants, slideInLeftVariants, slideInRightVariants
+2. Create `components/ui/AnimatedReveal.tsx` component wrapping children with motion.div using whileInView="visible" and viewport={{ once: true }}, respecting `useReducedMotion`
+3. Create `components/ui/ParallaxBackground.tsx` using Framer Motion useScroll and useTransform for parallax effect, respecting reduced motion
+4. Create `components/ui/Section.tsx` wrapper component with id prop, background variants (default/muted/primary), padding, and optional fullHeight prop
+5. Create `components/ui/index.ts` barrel export for Section, AnimatedReveal, ParallaxBackground
+6. Create `components/sections/Hero.tsx` with staggered animation for title "Cabanagem", subtitle about the revolt, description, and scroll arrow indicator
+7. Create `components/sections/index.ts` barrel export
+8. Update `app/page.tsx` to use Hero and animated Section components with AnimatedReveal for content
 
-**Dependencies:** Phase 3
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] Hero section displays with staggered fade-in animation on page load
+- [ ] Scrolling reveals section content with fade-up animations
+- [ ] Parallax background effect visible on sections with ParallaxBackground
+- [ ] With `prefers-reduced-motion: reduce` enabled in OS/browser, animations are disabled or simplified
+- [ ] Scroll arrow indicator animates (bounces or pulses)
+- [ ] Section backgrounds alternate correctly (default, muted, primary variants)
 
-**Done when:** MDX renders in sections, citations show tooltips, sources extracted from frontmatter
-<!-- END_PHASE_4 -->
+---
 
-<!-- START_PHASE_5 -->
-### Phase 5: Interactive Timeline
+### Task 4: MDX Content System
 
-**Goal:** Scroll-driven vertical timeline with expandable events
+**Description:** Set up the MDX pipeline for content authoring with frontmatter support. Build the citation system with inline tooltips and source registry. Create sample content to validate the system.
 
-**Components:**
-- `components/timeline/Timeline.tsx` — container with central spine
-- `components/timeline/TimelineEvent.tsx` — individual event card with expand/collapse
-- `components/timeline/TimelineSpine.tsx` — animated vertical line
-- `content/timeline/*.mdx` — 10-15 key event files with dates and sources
-- `lib/timeline.ts` — utility to load and sort timeline events
+**Blocked by:** Task 3
 
-**Dependencies:** Phase 4
+**Implementation guidance:**
+1. Install MDX dependencies: `pnpm add @next/mdx @mdx-js/loader @mdx-js/react gray-matter` and `pnpm add -D @types/mdx`
+2. Update `next.config.ts` to use createMDX wrapper with pageExtensions including .mdx
+3. Create `mdx-components.tsx` in root with custom h1/h2/h3/p/blockquote/ul/ol styling using Lora for headings and Inter for body
+4. Create `types/content.ts` with:
+   - Source interface (id, author, title, year, publisher?, url?, accessDate?, pages?)
+   - ContentFrontmatter, TimelineEventFrontmatter, PersonagemFrontmatter types
+5. Create `lib/sources.ts` with sourcesRegistry Map, registerSource, getSource, getAllSources, formatSourceCitation, formatSourceUrl utilities
+6. Create `components/content/SourceTooltip.tsx` with positioned tooltip showing formatted citation
+7. Create `components/content/Citation.tsx` as inline superscript component with hover/focus tooltip using SourceTooltip
+8. Create `lib/content-loader.ts` with loadContentFile and loadAllContent functions using gray-matter, registering sources from frontmatter
+9. Create `content/sections/contexto.mdx` with sample content about colonial context, frontmatter sources array, and Citation usage examples
+10. Create `components/sections/ContentSection.tsx` wrapping Section and AnimatedReveal with prose styling
 
-**Done when:** Timeline renders events chronologically, cards reveal on scroll, expansion shows full content with sources
-<!-- END_PHASE_5 -->
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] MDX files in content/ are parseable without errors
+- [ ] Frontmatter is correctly extracted from MDX files (test with console.log or debug)
+- [ ] Citation components render as superscript numbers (e.g., ¹, ², ³)
+- [ ] Hovering over a citation shows tooltip with formatted source information
+- [ ] Custom MDX typography styles apply (Lora headings, Inter body)
+- [ ] ContentSection renders contexto.mdx content with animations
 
-<!-- START_PHASE_6 -->
-### Phase 6: Character Profiles
+---
 
-**Goal:** Key figure cards with expandable biographies
+### Task 5: Interactive Timeline
 
-**Components:**
-- `components/personagens/CharacterGrid.tsx` — responsive grid layout
-- `components/personagens/CharacterCard.tsx` — portrait placeholder, name, role, hover effect
-- `components/personagens/CharacterModal.tsx` — full biography modal
-- `content/personagens/*.mdx` — 5-8 character files (Malcher, Vinagre brothers, Angelim, Batista Campos, etc.)
-- `lib/personagens.ts` — utility to load character data
+**Description:** Build the scroll-driven vertical timeline showing key events from 1835-1840. Create expandable event cards with alternating left/right layout and source citations. Populate with 3+ historical events.
 
-**Dependencies:** Phase 4
+**Blocked by:** Task 4
 
-**Done when:** Character grid displays, hover effects work, modal shows full biography with sources
-<!-- END_PHASE_6 -->
+**Implementation guidance:**
+1. Create `lib/timeline.ts` with TimelineEvent interface, loadTimelineEvents function reading from content/timeline/*.mdx, parseDate and formatEventDate utilities for Portuguese date formatting (e.g., "7 de janeiro de 1835")
+2. Create `components/timeline/TimelineSpine.tsx` with Framer Motion scroll-linked height animation for the central vertical line
+3. Create `components/timeline/TimelineEvent.tsx` with:
+   - Expandable card showing date, title, description
+   - Full content revealed on expand
+   - Sources footer with citations
+   - Alternating left/right layout based on index
+   - Keyboard accessible (Enter/Space to expand)
+4. Create `components/timeline/Timeline.tsx` container with Section wrapper, heading "A Revolta", TimelineSpine, and mapped TimelineEvent components
+5. Create `components/timeline/index.ts` barrel export
+6. Create timeline event MDX files with frontmatter (title, date, location, description, sources):
+   - `content/timeline/1835-01-07-tomada-belem.mdx` - Taking of Belém
+   - `content/timeline/1835-02-vinagre.mdx` - Francisco Vinagre assumes power
+   - `content/timeline/1836-angelim.mdx` - Eduardo Angelim's leadership
+7. Update `app/page.tsx` to import Timeline and loadTimelineEvents, make component async, render Timeline in the revolta section
+8. Add responsive mobile styles: all cards on left with left-aligned spine on mobile (< md breakpoint)
 
-<!-- START_PHASE_7 -->
-### Phase 7: Interactive Map
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] Timeline displays with central vertical spine
+- [ ] Spine animates/draws as user scrolls into view
+- [ ] Event cards appear alternating left and right on desktop
+- [ ] Event cards appear all on left on mobile (< 768px)
+- [ ] Clicking/tapping an event card expands to show full content
+- [ ] Keyboard navigation works (Tab to focus, Enter/Space to expand)
+- [ ] Dates display in Portuguese format (e.g., "7 de janeiro de 1835")
+- [ ] At least 3 timeline events render with content and sources
 
-**Goal:** Zoomable map of Pará with location markers
+---
 
-**Components:**
-- `components/map/MapContainer.tsx` — Leaflet wrapper with custom styling
-- `components/map/LocationMarker.tsx` — custom marker component
-- `components/map/LocationDetail.tsx` — sidebar/bottom-sheet for marker details
-- `lib/locations.ts` — location data (coordinates, events, descriptions)
-- Historical-toned map tile configuration
+### Task 6: Character Profiles
 
-**Dependencies:** Phase 3
+**Description:** Create the character showcase section with card grid and modal biographies. Build profiles for 4 key historical figures with portraits (placeholders), biographies, and source citations.
 
-**Done when:** Map renders Pará region, markers show tooltips on hover, click opens detail panel, mobile bottom-sheet works
-<!-- END_PHASE_7 -->
+**Blocked by:** Task 5
 
-<!-- START_PHASE_8 -->
-### Phase 8: Fontes Page & Final Polish
+**Implementation guidance:**
+1. Create `lib/personagens.ts` with Personagem interface, loadPersonagens function reading from content/personagens/*.mdx, formatLifespan utility (e.g., "1790-1835")
+2. Create `components/personagens/CharacterCard.tsx` with:
+   - Portrait placeholder (colored div or SVG silhouette)
+   - Name, role, lifespan
+   - Hover lift effect (translateY with shadow)
+   - Keyboard accessible (focusable, Enter to open modal)
+3. Create `components/personagens/CharacterModal.tsx` with:
+   - React portal for proper stacking
+   - Framer Motion enter/exit animations
+   - Portrait, name, role, full biography
+   - Sources footer
+   - Close on X button, backdrop click, or Escape key
+   - Focus trap (focus stays within modal while open)
+4. Create `components/personagens/CharacterGrid.tsx` container with Section wrapper, heading "Personagens", responsive grid (1 col mobile, 2 col tablet, 4 col desktop), state for selected personagem, CharacterCard mapping, CharacterModal
+5. Create `components/personagens/index.ts` barrel export
+6. Create character MDX files with frontmatter (name, role, birthYear, deathYear, description, sources):
+   - `content/personagens/malcher.mdx` - Félix Clemente Malcher
+   - `content/personagens/vinagre.mdx` - Francisco Vinagre
+   - `content/personagens/angelim.mdx` - Eduardo Angelim
+   - `content/personagens/batista-campos.mdx` - Cônego Batista Campos
+7. Update `app/page.tsx` to import CharacterGrid and loadPersonagens, render CharacterGrid after Timeline
 
-**Goal:** Dedicated sources page, SEO, and production readiness
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] Character grid displays 4 character cards in responsive layout
+- [ ] Cards show portrait placeholder, name, role, lifespan
+- [ ] Hovering card shows lift effect
+- [ ] Clicking card opens modal with full biography
+- [ ] Modal can be closed via X button, backdrop click, or Escape key
+- [ ] Focus is trapped within modal while open
+- [ ] Tab navigation works through cards
+- [ ] Sources display in modal footer
 
-**Components:**
-- `app/fontes/page.tsx` — full bibliography page
-- `components/fontes/SourceList.tsx` — categorized source display
-- OpenGraph metadata and images in `app/layout.tsx`
-- `robots.txt` and `sitemap.xml`
-- Performance audit and optimization
-- Vercel deployment configuration
+---
 
-**Dependencies:** All previous phases
+### Task 7: Interactive Map
 
-**Done when:** Fontes page lists all sources, Lighthouse score 90+, deployed to Vercel
-<!-- END_PHASE_8 -->
+**Description:** Build the interactive Leaflet map of Pará showing key locations and battle sites. Create location markers with detail panels (sidebar on desktop, bottom sheet on mobile). Handle SSR compatibility.
+
+**Blocked by:** Task 6
+
+**Implementation guidance:**
+1. Install Leaflet: `pnpm add leaflet react-leaflet` and `pnpm add -D @types/leaflet`
+2. Create `types/map.ts` with MapLocation interface (id, name, coordinates: [lat, lng], type: 'city' | 'battle', description, events: LocationEvent[]) and LocationEvent interface
+3. Create `lib/locations.ts` with:
+   - locations array: Belém, Cametá, Santarém, Vigia, Acará, Ecuipiranga, Abaetetuba, Breves
+   - getLocationById, getLocationsByType utilities
+   - PARA_BOUNDS and PARA_CENTER constants for map positioning
+4. Create `components/map/LocationMarker.tsx` using react-leaflet Marker with custom icons by type (city=primary green, battle=secondary terracotta), Tooltip on hover, onClick handler
+5. Create `components/map/LocationDetail.tsx` with:
+   - Responsive layout: sidebar (md:absolute right) on desktop, bottom sheet on mobile
+   - Location name, type badge, description, events list
+   - Close button
+   - Framer Motion slide-in animations
+6. Add Leaflet CSS import to `app/globals.css`: `@import "leaflet/dist/leaflet.css";`
+7. Create `components/map/MapContainer.tsx` (export as MapSection) with:
+   - Section wrapper, heading "O Mapa da Revolta"
+   - Legend explaining marker colors
+   - LeafletMap using MapContainer and TileLayer (CARTO light tiles: `https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png`)
+   - LocationMarker for each location
+   - LocationDetail panel (conditionally rendered when location selected)
+   - Loading placeholder while map initializes
+   - `isMounted` state check for SSR safety
+   - Use Next.js dynamic import with `{ ssr: false }` for react-leaflet components
+8. Create `components/map/index.ts` barrel export
+9. Update `app/page.tsx` to import MapSection and render after CharacterGrid
+
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully (no SSR errors)
+- [ ] Map renders centered on Pará state
+- [ ] 8 location markers visible on map
+- [ ] City markers show primary (green) color
+- [ ] Battle markers show secondary (terracotta) color
+- [ ] Hovering marker shows tooltip with location name
+- [ ] Clicking marker opens detail panel
+- [ ] Detail panel shows as sidebar on desktop (≥768px)
+- [ ] Detail panel shows as bottom sheet on mobile (<768px)
+- [ ] Detail panel can be closed
+- [ ] Legend explains marker color meanings
+
+---
+
+### Task 8: Fontes Page & Final Polish
+
+**Description:** Create the dedicated bibliography page, add legacy content section, configure SEO metadata, set up Vercel deployment, and perform final quality assurance (Lighthouse audit, accessibility, responsive testing).
+
+**Blocked by:** Task 7
+
+**Implementation guidance:**
+1. Create `app/fontes/page.tsx` with:
+   - Metadata for SEO
+   - Full page layout with Header and Footer
+   - Section with all sources grouped by type (Livros, Artigos, Recursos Online)
+   - Back link to home (/)
+2. Create `components/sections/Legado.tsx` with content about modern legacy:
+   - Place names (Avenida dos Cabanos, etc.)
+   - Monuments and memorials
+   - Annual commemorations
+   - Cultural impact
+3. Update `app/page.tsx` to import and render Legado section before the fontes preview
+4. Update `app/layout.tsx` metadata with comprehensive:
+   - OpenGraph (title, description, image, locale: pt_BR)
+   - Twitter card metadata
+   - viewport settings
+   - themeColor (#1a3a2f)
+   - keywords for SEO
+5. Create `public/robots.txt` allowing all crawlers with sitemap reference
+6. Create `app/sitemap.ts` generating sitemap with home (/) and /fontes URLs
+7. Update `next.config.ts` with performance optimizations:
+   - reactStrictMode: true
+   - image formats: ['avif', 'webp']
+   - compress: true
+   - optimizePackageImports for framer-motion, leaflet
+8. Create `vercel.json` with:
+   - framework: "nextjs"
+   - regions: ["gru1"] (São Paulo)
+   - Security headers (X-Frame-Options, X-Content-Type-Options, etc.)
+   - Cache headers for fonts and static assets
+9. Update `components/layout/Header.tsx` nav to include /#legado link and /fontes link
+10. Run Lighthouse audit and fix issues:
+    - Lazy load below-fold images
+    - Add alt text to all images
+    - Verify color contrast meets WCAG AA
+    - Check heading hierarchy (h1 → h2 → h3)
+    - Optimize any render-blocking resources
+
+**Validation criteria:**
+- [ ] `pnpm run build` completes successfully
+- [ ] `pnpm run start` serves production build without errors
+- [ ] /fontes page displays all sources grouped by type
+- [ ] /fontes page has working back link to home
+- [ ] Legado section appears in main page with content
+- [ ] Header nav includes Legado and Fontes links
+- [ ] robots.txt accessible at /robots.txt
+- [ ] sitemap.xml accessible at /sitemap.xml (generated)
+- [ ] Lighthouse Performance score ≥ 90
+- [ ] Lighthouse Accessibility score ≥ 90
+- [ ] Lighthouse SEO score ≥ 90
+- [ ] No console errors in browser
+- [ ] Site is responsive: mobile (375px), tablet (768px), desktop (1280px)
+- [ ] All animations respect `prefers-reduced-motion`
+- [ ] `vercel` CLI deployment succeeds (or ready for deployment)
 
 ## Additional Considerations
 
-**Accessibility:**
+### Accessibility
 - All images have descriptive alt text
 - Keyboard navigation for timeline and map
 - `prefers-reduced-motion` respected throughout
 - Sufficient color contrast (WCAG AA)
 
-**Performance:**
+### Performance
 - Next.js Image component with blur placeholders
 - Lazy loading for below-fold content
 - Target: <150KB JS (gzipped), <1.5s FCP
 
-**Future extensibility:**
+### Future Extensibility
 - Content structure supports adding more events/characters via MDX
 - Map markers defined in data file, easy to expand
 - Design accommodates future illustration/photo assets when available
